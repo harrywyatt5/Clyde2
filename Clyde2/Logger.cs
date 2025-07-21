@@ -6,6 +6,10 @@ namespace Clyde2;
 
 public class Logger : IHookProvider
 {
+    private Logger() { }
+    private static readonly Lazy<Logger> _singleton = new(() => new Logger());
+    public static Logger Instance => _singleton.Value;
+
     public void ProvideHook(DiscordSocketClient client)
     {
         client.Log += TriageLogMessage;
@@ -13,6 +17,11 @@ public class Logger : IHookProvider
 
     public Task DisplayException(Exception exception)
     {
+        Console.WriteLine($"<!> {exception.Message} <!>");
+        if (!string.IsNullOrEmpty(exception.StackTrace))
+        {
+            Console.WriteLine($"Stack Trace:\n{exception.StackTrace}");
+        }
         return Task.CompletedTask;
     }
 
@@ -36,15 +45,5 @@ public class Logger : IHookProvider
 
         Console.BackgroundColor = consoleColor;
         Console.WriteLine($"[{logMessage.Source}]: {logMessage.Message}");
-    }
-    
-    public Task Log(LogMessage logMessage)
-    {
-        Console.WriteLine($"[Discord.NET]: {logMessage.Message}");
-        if (logMessage.Exception is not null)
-        {
-            Console.WriteLine($"Exception: {logMessage.Exception}");
-        }
-        return Task.CompletedTask;
     }
 }
